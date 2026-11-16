@@ -18,12 +18,15 @@
         }
 
         .hero {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100vh;
             display: flex;
-            align-items: center;
+            align-items: center; /* Banner centrado al inicio */
             justify-content: center;
             text-align: center;
-            position: relative;
             z-index: 1;
         }
         
@@ -32,6 +35,9 @@
             padding: 20px;
             box-shadow: none;
             max-width: 90%; 
+            /* El desplazamiento hacia abajo lo controla JavaScript según el scroll */
+            transform: translateY(0);
+            will-change: transform;
         }
         
         .hero-badge img {
@@ -43,11 +49,14 @@
 
         .feed-container {
             padding: 20px;
+            /* Las tarjetas empiezan debajo del hero fijo */
+            padding-top: 100vh;
             display: flex;
             flex-direction: column;
             gap: 15px; 
-            /* Esto permite scrollear hasta que la ÚLTIMA tarjeta se acople arriba */
-            padding-bottom: 100vh; 
+            /* El padding-bottom inferior se calcula con JavaScript (ajustarEspacioFinal)
+               para que el scroll termine exactamente cuando la última tarjeta queda fijada */
+            padding-bottom: 20px; 
             position: relative;
             z-index: 10;
             max-width: 500px;
@@ -324,6 +333,34 @@
             });
         });
 
+        // Ajusta el espacio inferior para que el scroll termine justo cuando
+        // la última tarjeta visible queda fijada en su posición final
+        function ajustarEspacioFinal() {
+            const feed = document.querySelector('.feed-container');
+            const visibles = [...feed.querySelectorAll('.card')].filter(c => c.offsetHeight > 0);
+            const ultima = visibles[visibles.length - 1];
+            const topPegado = parseFloat(getComputedStyle(ultima).top) || 0;
+
+            const relleno = window.innerHeight - ultima.offsetHeight - topPegado;
+            feed.style.paddingBottom = Math.max(20, relleno) + 'px';
+            moverBanner();
+        }
+
+        // Baja el banner según el avance del scroll:
+        // centrado al inicio y 25% de la pantalla más abajo al llegar al final
+        const banner = document.querySelector('.hero-badge');
+
+        function moverBanner() {
+            const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+            const progreso = Math.min(1, window.scrollY / maxScroll);
+            const desplazamiento = progreso * window.innerHeight * 0.25;
+            banner.style.transform = `translateY(${desplazamiento}px)`;
+        }
+
+        window.addEventListener('load', ajustarEspacioFinal);
+        window.addEventListener('resize', ajustarEspacioFinal);
+        window.addEventListener('scroll', moverBanner, { passive: true });
+
         const btnConfirmar = document.getElementById('btn-confirmar');
         const tarjetaReloj = document.getElementById('tarjeta-reloj');
         let intervaloReloj;
@@ -333,6 +370,7 @@
             outfitCols.forEach(c => c.classList.remove('expanded'));
 
             tarjetaReloj.style.display = 'flex';
+            ajustarEspacioFinal();
             
             setTimeout(() => {
                 tarjetaReloj.scrollIntoView({ behavior: 'smooth', block: 'end' });
