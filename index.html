@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitación Milagros</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+            /* Fondo base fijo */
+            background-image: url('milagros'), linear-gradient(to bottom, #8faadc 0%, #b3c6e6 30%, #e6ebd8 60%, #c4d4af 100%);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            overscroll-behavior: none;
+            /* SE ELIMINÓ overflow-x: hidden; PARA QUE FUNCIONE EL APILADO */
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-badge {
+            background: transparent; 
+            padding: 20px;
+            box-shadow: none;
+            max-width: 90%; 
+        }
+        
+        .hero-badge img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+        }
+
+        .feed-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px; 
+            /* Esto permite scrollear hasta que la ÚLTIMA tarjeta se acople arriba */
+            padding-bottom: 100vh; 
+            position: relative;
+            z-index: 10;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Molde base de las tarjetas */
+        .card {
+            background-image: url('FondoOndulado.png'); 
+            background-size: 100% 100%; 
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            /* CORRECCIÓN CRÍTICA: Totalmente transparente para que se vean tus ondas */
+            background-color: transparent; 
+            
+            padding: 50px 35px; 
+            box-shadow: none; 
+            filter: drop-shadow(0 -5px 15px rgba(0,0,0,0.1)); 
+            
+            position: sticky;
+            box-sizing: border-box;
+            min-height: 380px; 
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+        }
+
+        #tarjeta-ejemplos {
+            max-height: 0;
+            min-height: 0; 
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: -15px; 
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        #tarjeta-ejemplos.visible {
+            max-height: 900px;
+            min-height: 380px; 
+            padding-top: 50px;
+            padding-bottom: 50px;
+            margin-bottom: 0;
+        }
+
+        #tarjeta-reloj {
+            display: none;
+            text-align: center;
+        }
+
+        /* Distancias de apilamiento (Efecto Mazo Mercado Pago) */
+        .card:nth-child(1) { top: 10px; }
+        .card:nth-child(2) { top: 25px; }
+        .card:nth-child(3) { top: 40px; }
+        .card:nth-child(4) { top: 55px; }
+        .card:nth-child(5) { top: 70px; }
+        .card:nth-child(6) { top: 85px; }
+
+        .card-title {
+            font-size: 1.8rem; 
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px; 
+            color: #222;
+        }
+        
+        .card-text {
+            text-align: center;
+            color: #444;
+            font-size: 1.1rem; 
+            margin-bottom: 20px; 
+            line-height: 1.5;
+        }
+        
+        .btn {
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+            background: #c3d5e8; 
+            padding: 12px 35px;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #222;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .outfits-accordion {
+            display: flex;
+            flex-direction: row; 
+            height: 240px; 
+            gap: 6px;
+            margin-top: 10px;
+        }
+        
+        .outfit-col {
+            flex: 1; 
+            height: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: flex 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            position: relative;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .outfit-col.expanded {
+            flex: 4; 
+        }
+        
+        .col-title {
+            position: absolute;
+            font-weight: bold;
+            color: #222;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            writing-mode: vertical-rl; 
+            transform: rotate(180deg);
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .outfit-col.expanded .col-title {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .outfit-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .outfit-col.expanded .outfit-content {
+            opacity: 1;
+            transition-delay: 0.2s; 
+        }
+        
+        .outfit-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            margin-top: 15px;
+        }
+        
+        .time-box {
+            display: flex;
+            flex-direction: column;
+            background: rgba(0,0,0,0.05); 
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: #222; 
+        }
+        
+        .time-box span { font-size: 2rem; font-weight: bold; }
+        .time-box label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="hero-badge">
+            <img src="Inicio.png" alt="Save the Date - Milagros 07.01.2027">
+        </div>
+    </div>
+
+    <div class="feed-container">
+        
+        <div class="card">
+            <h2 class="card-title">Dress code</h2>
+            <p class="card-text">Pollera o bermuda color blanco, beige o marrón, y una remera playera o un top con tonos claros.</p>
+            <button class="btn" id="btn-ejemplos">Ver ejemplos</button>
+        </div>
+
+        <div class="card" id="tarjeta-ejemplos">
+            <h2 class="card-title">Ideas de Outfit</h2>
+            <div class="outfits-accordion">
+                <div class="outfit-col" style="background-color: #b3ba9a;">
+                    <div class="col-title">Verde</div>
+                    <div class="outfit-content">
+                        <img src="OutfitVerde.png" alt="OutfitVerde">
+                    </div>
+                </div>
+                <div class="outfit-col" style="background-color: #c5d4df;">
+                    <div class="col-title">Celeste</div>
+                    <div class="outfit-content">
+                        <img src="OutfitCeleste.png" alt="Outfit Celeste">
+                    </div>
+                </div>
+                <div class="outfit-col" style="background-color: #debbd1;">
+                    <div class="col-title">Rosa</div>
+                    <div class="outfit-content">
+                        <img src="OutfitRosa.png" alt="Outfit Rosa">
+                    </div>
+                </div>
+                <div class="outfit-col" style="background-color: #806D6B;">
+                    <div class="col-title">Marrón</div>
+                    <div class="outfit-content">
+                        <img src="OutfitMarron.png" alt="Outfit Lila">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">Lugar y horario</h2>
+            <p class="card-text">Jueves 7 de enero, de 12 hs a 20 hs.<br><br><strong>La Posada del León</strong></p>
+            <a href="#" class="btn" target="_blank">Maps</a>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Música</h2>
+            <p class="card-text">¡Sumá tus canciones favoritas a la playlist de la fiesta!</p>
+            <a href="https://open.spotify.com/playlist/6Ysf9lxAFBgRIJ922w1MzI?si=2IjDnAznSai99qwierhyFA&utm_source=whatsapp&pt=6c604d66bc948e96578c1bc7e68cd62b&pi=h9jBMmZuQKmjP" class="btn" target="_blank">Abrir Spotify</a>
+        </div>
+
+        <!-- Tarjeta Confirmar -->
+        <div class="card" style="padding: 0; min-height: auto; border-radius: 0; background-image: none; background-color: transparent; filter: none;">
+            <img src="Confirmar.jpg" id="btn-confirmar" style="width: 100%; height: auto; cursor: pointer; filter: drop-shadow(0 -5px 15px rgba(0,0,0,0.1));" alt="Confirmar asistencia">
+        </div>
+
+        <div class="card" id="tarjeta-reloj">
+            <h2 class="card-title">¡Faltan!</h2>
+            <div class="countdown">
+                <div class="time-box"><span id="dias">00</span><label>Días</label></div>
+                <div class="time-box"><span id="horas">00</span><label>Horas</label></div>
+                <div class="time-box"><span id="min">00</span><label>Min</label></div>
+                <div class="time-box"><span id="seg">00</span><label>Seg</label></div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        const btnEjemplos = document.getElementById('btn-ejemplos');
+        const tarjetaEjemplos = document.getElementById('tarjeta-ejemplos');
+
+        btnEjemplos.addEventListener('click', () => {
+            tarjetaEjemplos.classList.toggle('visible');
+        });
+
+        const outfitCols = document.querySelectorAll('.outfit-col');
+        
+        outfitCols.forEach(col => {
+            col.addEventListener('click', function() {
+                if (this.classList.contains('expanded')) {
+                    this.classList.remove('expanded');
+                } else {
+                    outfitCols.forEach(c => c.classList.remove('expanded'));
+                    this.classList.add('expanded');
+                }
+            });
+        });
+
+        const btnConfirmar = document.getElementById('btn-confirmar');
+        const tarjetaReloj = document.getElementById('tarjeta-reloj');
+        let intervaloReloj;
+
+        btnConfirmar.addEventListener('click', () => {
+            tarjetaEjemplos.classList.remove('visible');
+            outfitCols.forEach(c => c.classList.remove('expanded'));
+
+            tarjetaReloj.style.display = 'flex';
+            
+            setTimeout(() => {
+                tarjetaReloj.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 100);
+
+            const fechaObjetivo = new Date('January 7, 2027 12:00:00').getTime();
+
+            clearInterval(intervaloReloj);
+            intervaloReloj = setInterval(() => {
+                const ahora = new Date().getTime();
+                const diferencia = fechaObjetivo - ahora;
+
+                if (diferencia > 0) {
+                    document.getElementById('dias').innerText = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+                    document.getElementById('horas').innerText = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    document.getElementById('min').innerText = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                    document.getElementById('seg').innerText = Math.floor((diferencia % (1000 * 60)) / 1000);
+                } else {
+                    clearInterval(intervaloReloj);
+                    tarjetaReloj.innerHTML = "<h2 class='card-title'>¡Llegó el día!</h2>";
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
