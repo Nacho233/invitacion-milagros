@@ -788,7 +788,7 @@
             if (img.decode) img.decode().catch(() => {});
         });
 
-        // 1. MÚSICA DE FONDO + BOTÓN MUTE / PLAY
+       // 1. MÚSICA DE FONDO + BOTÓN MUTE / PLAY
         const bgMusic = document.getElementById('bg-music');
         const btnMusic = document.getElementById('btn-music');
         const iconMuted = document.getElementById('icon-muted');
@@ -801,25 +801,35 @@
             btnMusic.classList.toggle('playing', isPlaying);
         }
 
-        function tryAutoPlay() {
+        function stopAutoPlayListeners() {
+            window.removeEventListener('click', tryAutoPlay);
+            window.removeEventListener('touchend', tryAutoPlay);
+            window.removeEventListener('keydown', tryAutoPlay);
+        }
+
+        function tryAutoPlay(e) {
             if (userMuted || !bgMusic.paused) return;
+            if (e && e.target && e.target.closest('#btn-music')) return;
             bgMusic.volume = 0.45;
             bgMusic.play().then(() => {
                 updateMusicUI(true);
-                window.removeEventListener('click', tryAutoPlay);
-                window.removeEventListener('touchstart', tryAutoPlay);
+                stopAutoPlayListeners();
             }).catch(() => {});
         }
 
         window.addEventListener('click', tryAutoPlay);
-        window.addEventListener('touchstart', tryAutoPlay, { passive: true });
+        window.addEventListener('touchend', tryAutoPlay, { passive: true });
+        window.addEventListener('keydown', tryAutoPlay);
 
         btnMusic.addEventListener('click', (e) => {
             e.stopPropagation();
             if (bgMusic.paused) {
                 userMuted = false;
                 bgMusic.volume = 0.45;
-                bgMusic.play().then(() => updateMusicUI(true)).catch(() => {});
+                bgMusic.play().then(() => {
+                    updateMusicUI(true);
+                    stopAutoPlayListeners();
+                }).catch(() => {});
             } else {
                 userMuted = true;
                 bgMusic.pause();
