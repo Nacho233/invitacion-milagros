@@ -20,7 +20,7 @@
             touch-action: pan-y;
         }
 
-        /* Fondo fijo real compatible con celulares (evita el recuadro blanco al ocultarse la barra) */
+        /* Fondo fijo real compatible con celulares */
         .fixed-bg {
             position: fixed;
             top: -60px;
@@ -44,7 +44,7 @@
             pointer-events: none;
         }
 
-        /* BOTÓN FLOTANTE DE MÚSICA (Arriba a la derecha) */
+        /* BOTÓN FLOTANTE DE MÚSICA (Sin backdrop-filter para evitar tirones al scrollear) */
         .music-btn {
             position: fixed;
             top: 18px;
@@ -54,14 +54,13 @@
             height: 46px;
             border-radius: 50%;
             border: 1.5px solid rgba(34, 34, 34, 0.18);
-            background: rgba(247, 244, 237, 0.92);
+            background: rgba(247, 244, 237, 0.96);
             color: #222;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
-            backdrop-filter: blur(6px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             transition: transform 0.2s ease, background 0.2s ease;
         }
 
@@ -71,7 +70,7 @@
         }
 
         .music-btn.playing {
-            box-shadow: 0 0 0 4px rgba(195, 213, 232, 0.55), 0 6px 16px rgba(0, 0, 0, 0.16);
+            box-shadow: 0 0 0 4px rgba(195, 213, 232, 0.6), 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .music-btn svg {
@@ -79,7 +78,7 @@
             height: 22px;
         }
 
-        /* EASTER EGG DEL REGALO (Con tu regalo.gif transparente) */
+        /* EASTER EGG DEL REGALO (Sin drop-shadow dinámico sobre el GIF para no frenar la GPU) */
         .gift-egg-btn {
             position: fixed;
             bottom: 20px;
@@ -94,8 +93,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.22));
-            animation: gift-wiggle 4.5s ease-in-out infinite;
+            transform: translateZ(0);
         }
 
         .gift-egg-btn img {
@@ -107,15 +105,7 @@
         }
 
         .gift-egg-btn:hover img {
-            transform: scale(1.1);
-        }
-
-        @keyframes gift-wiggle {
-            0%, 82%, 100% { transform: rotate(0deg) scale(1); }
-            86% { transform: rotate(-6deg) scale(1.04); }
-            90% { transform: rotate(6deg) scale(1.04); }
-            94% { transform: rotate(-3deg) scale(1.02); }
-            97% { transform: rotate(2deg) scale(1.01); }
+            transform: scale(1.08);
         }
 
         @media (max-width: 600px) {
@@ -127,7 +117,7 @@
             }
         }
 
-        /* CAPA 1: El cristal Ojo de Pez (activo en PC, desactivado en celular para 60 FPS) */
+        /* CAPA 1: El cristal Ojo de Pez (activo en PC, desactivado en celular) */
         .fisheye-lens-layer {
             position: fixed;
             inset: 0;
@@ -137,12 +127,10 @@
             z-index: 10;
             pointer-events: none;
             filter: url(#fisheye-lens);
-            will-change: filter;
         }
 
         .fisheye-lens-layer.no-fisheye {
             filter: none !important;
-            will-change: auto;
         }
 
         /* CAPA 2: La cámara de perspectiva 3D */
@@ -174,6 +162,7 @@
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             will-change: transform, opacity;
+            contain: layout style;
             pointer-events: auto;
         }
 
@@ -204,6 +193,13 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+
+        /* En celular sacamos drop-shadow por GPU para evitar tironeos al aparecer tarjetas */
+        .no-fisheye .card,
+        .no-fisheye .hero-card img,
+        .no-fisheye .confirm-card {
+            filter: none !important;
         }
 
         @media (max-width: 600px) {
@@ -238,12 +234,12 @@
         .deadline-pill {
             margin-top: 28px;
             padding: 8px 18px;
-            background: rgba(247, 244, 237, 0.94);
+            background: rgba(247, 244, 237, 0.96);
             color: #333;
             border-radius: 999px;
             font-size: 0.92rem;
             letter-spacing: 0.3px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
             text-align: center;
         }
 
@@ -391,7 +387,6 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
         }
 
         /* Contador */
@@ -422,15 +417,14 @@
             position: fixed;
             inset: 0;
             z-index: 500;
-            background: rgba(25, 30, 22, 0.55);
-            backdrop-filter: blur(6px);
+            background: rgba(25, 30, 22, 0.58);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 18px;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
             overscroll-behavior: contain;
         }
 
@@ -450,8 +444,8 @@
             padding: 32px 26px 26px;
             box-shadow: 0 22px 45px rgba(0, 0, 0, 0.25);
             border: 2px solid rgba(179, 186, 154, 0.45);
-            transform: translateY(18px) scale(0.97);
-            transition: transform 0.3s ease;
+            transform: translateY(16px) scale(0.97);
+            transition: transform 0.25s ease;
             color: #222;
         }
 
@@ -594,7 +588,7 @@
 </head>
 <body>
 
-    <!-- Fondo fijo separado (sin bug de franja blanca en celulares) -->
+    <!-- Fondo fijo separado -->
     <div class="fixed-bg" aria-hidden="true"></div>
 
     <!-- Audio de fondo -->
@@ -616,7 +610,7 @@
 
     <!-- Easter Egg flotante del Regalo -->
     <button class="gift-egg-btn" id="btn-regalo-egg" type="button" aria-label="Regalo sorpresa" title="Regalo">
-        <img src="regalo.gif" alt="Regalo">
+        <img src="regalo.gif" alt="Regalo" decoding="async">
     </button>
 
     <!-- Filtro SVG calibrado a las dimensiones de la pantalla (solo activo en PC) -->
@@ -636,7 +630,7 @@
 
                 <!-- 0. Portada -->
                 <div class="card-3d hero-card">
-                    <img src="Inicio.png" alt="Save the Date - Milagros 07.01.2027">
+                    <img src="Inicio.png" alt="Save the Date - Milagros 07.01.2027" decoding="async">
                 </div>
 
                 <!-- 1. Dress Code -->
@@ -653,25 +647,25 @@
                         <div class="outfit-col" style="background-color: #b3ba9a;">
                             <div class="col-title">Verde</div>
                             <div class="outfit-content">
-                                <img src="OutfitVerde.png" alt="Outfit Verde">
+                                <img src="OutfitVerde.png" alt="Outfit Verde" decoding="async">
                             </div>
                         </div>
                         <div class="outfit-col" style="background-color: #c5d4df;">
                             <div class="col-title">Celeste</div>
                             <div class="outfit-content">
-                                <img src="OutfitCeleste.png" alt="Outfit Celeste">
+                                <img src="OutfitCeleste.png" alt="Outfit Celeste" decoding="async">
                             </div>
                         </div>
                         <div class="outfit-col" style="background-color: #debbd1;">
                             <div class="col-title">Rosa</div>
                             <div class="outfit-content">
-                                <img src="OutfitRosa.png" alt="Outfit Rosa">
+                                <img src="OutfitRosa.png" alt="Outfit Rosa" decoding="async">
                             </div>
                         </div>
                         <div class="outfit-col" style="background-color: #806D6B;">
                             <div class="col-title">Marrón</div>
                             <div class="outfit-content">
-                                <img src="OutfitMarron.png" alt="Outfit Marrón">
+                                <img src="OutfitMarron.png" alt="Outfit Marrón" decoding="async">
                             </div>
                         </div>
                     </div>
@@ -693,7 +687,7 @@
 
                 <!-- 5. Confirmar + Fecha límite -->
                 <div class="card-3d confirm-card">
-                    <img src="Confirmar.png" onerror="this.onerror=null; this.src='Confirmar.jpg';" id="btn-confirmar" alt="Confirmar asistencia">
+                    <img src="Confirmar.png" onerror="this.onerror=null; this.src='Confirmar.jpg';" id="btn-confirmar" alt="Confirmar asistencia" decoding="async">
                     <div class="deadline-pill">Confirmar antes del <strong>15 de diciembre</strong></div>
                 </div>
 
@@ -703,9 +697,9 @@
                     <p class="card-text">Tu presencia es mi mejor regalo. Si además deseás tener un detalle conmigo, podés hacerlo acá.</p>
                     <div class="alias-box">
                         <div class="alias-label">Alias</div>
-                        <!-- CAMBIÁ EL ALIAS Y EL TITULAR ACÁ SI YA TENÉS LOS REALES -->
-                        <div class="alias-value" id="alias-texto">milagros.15.mp</div>
-                        <div class="alias-owner">Titular: Milagros</div>
+                        <!-- CAMBIÁ EL ALIAS Y EL TITULAR ACÁ -->
+                        <div class="alias-value" id="alias-texto">milagros.crz</div>
+                        <div class="alias-owner">Titular: Milagros Sol Cruz</div>
                     </div>
                     <button type="button" class="btn" id="btn-copiar-alias">Copiar alias</button>
                 </div>
@@ -783,6 +777,16 @@
     <script>
         // URL de tu Google Apps Script conectada a "Confirmaciones - 15 de Milagros"
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzc0o5X-0W3E3sRcwGxTuEFZB9nsFODWiJgON-Xs95b5lgFIXpBUU2cbEes1KyTii2o/exec';
+
+        // Precargamos y decodificamos las imágenes al inicio para evitar micro-tirones al aparecer
+        ['FondoOndulado.png', 'Inicio.png', 'Confirmar.png'].forEach(src => {
+            const img = new Image();
+            img.src = src;
+            if (img.decode) img.decode().catch(() => {});
+        });
+        document.querySelectorAll('img').forEach(img => {
+            if (img.decode) img.decode().catch(() => {});
+        });
 
         // 1. MÚSICA DE FONDO + BOTÓN MUTE / PLAY
         const bgMusic = document.getElementById('bg-music');
@@ -884,55 +888,30 @@
             lensMapEl.setAttribute('href', canvas.toDataURL());
         }
 
-        // 3. MOTOR DE CARRUSEL 3D OPTIMIZADO PARA PC Y CELULAR
+        // 3. MOTOR DE CARRUSEL 3D DE ALTO RENDIMIENTO (Sin pérdida de texturas ni recálculos innecesarios)
         const scrollTrack = document.getElementById('scroll-track');
         const sceneTilt = document.getElementById('scene-tilt');
         const allCards = Array.from(document.querySelectorAll('.card-3d'));
+        const cardState = new WeakMap();
+        allCards.forEach(card => cardState.set(card, { parked: false, zIndex: null, interactive: null }));
 
+        let activeCards = [];
         let lastWidth = window.innerWidth;
         let baseHeight = window.innerHeight;
         let stepHeight = isMobile ? Math.min(baseHeight * 0.42, 320) : baseHeight * 0.85;
         let currentProgress = 0;
         let targetProgress = 0;
         let velocity = 0;
+        let isAnimating = false;
+        let lastFrameTime = 0;
 
-        function getActiveCards() {
-            return allCards.filter(c => !c.classList.contains('hidden-card'));
+        function updateActiveCards() {
+            activeCards = allCards.filter(c => !c.classList.contains('hidden-card'));
+            scrollTrack.style.height = `${baseHeight + (activeCards.length - 1) * stepHeight}px`;
+            startLoop();
         }
 
-        function updateScrollHeight() {
-            const activeCount = getActiveCards().length;
-            scrollTrack.style.height = `${baseHeight + (activeCount - 1) * stepHeight}px`;
-        }
-
-        function onResize(force = false) {
-            const currentWidth = window.innerWidth;
-            // En celulares ignoramos el resize vertical de la barra de direcciones para evitar tironeos
-            if (!force && isMobile && Math.abs(currentWidth - lastWidth) < 10) return;
-
-            lastWidth = currentWidth;
-            isMobile = detectMobile();
-            baseHeight = window.innerHeight;
-            stepHeight = isMobile ? Math.min(baseHeight * 0.42, 320) : baseHeight * 0.85;
-
-            updateScrollHeight();
-            updateFisheyeLens();
-        }
-
-        window.addEventListener('resize', () => onResize(false));
-        onResize(true);
-
-        function animate3D() {
-            const activeCards = getActiveCards();
-            const maxIndex = Math.max(0, activeCards.length - 1);
-
-            targetProgress = Math.min(maxIndex, Math.max(0, window.scrollY / stepHeight));
-
-            // Inercia más ágil en celular (0.22) y sedosa en PC (0.09)
-            const lerp = isMobile ? 0.22 : 0.09;
-            currentProgress += (targetProgress - currentProgress) * lerp;
-            velocity = (targetProgress - currentProgress);
-
+        function renderCards() {
             const tiltX = isMobile
                 ? Math.max(-10, Math.min(10, velocity * 10))
                 : Math.max(-14, Math.min(14, velocity * 16));
@@ -942,10 +921,9 @@
 
             sceneTilt.style.transform = `rotateX(${tiltX.toFixed(2)}deg) rotateZ(${tiltZ.toFixed(2)}deg)`;
 
-            // Solo actualizamos el filtro SVG en PC y si realmente cambió el valor
             if (!isMobile) {
-                const fisheyeScale = 110 + Math.min(40, Math.abs(velocity) * 75);
-                if (Math.abs(fisheyeScale - lastLensScale) > 0.25) {
+                const fisheyeScale = 110 + Math.min(35, Math.abs(velocity) * 65);
+                if (Math.abs(fisheyeScale - lastLensScale) > 0.4) {
                     lensDisp.setAttribute('scale', fisheyeScale.toFixed(1));
                     lastLensScale = fisheyeScale;
                 }
@@ -959,16 +937,31 @@
             const ryMult = isMobile ? -10 : -17;
             const rzMult = isMobile ? -5 : -9;
 
-            activeCards.forEach((card, index) => {
-                const d = index - currentProgress;
+            for (let i = 0; i < activeCards.length; i++) {
+                const card = activeCards[i];
+                const st = cardState.get(card);
+                const d = i - currentProgress;
                 const absD = Math.abs(d);
 
+                // Estacionamos fuera de cámara con opacity 0 (SIN visibility:hidden para no descargar la GPU)
                 if (absD > 2.2) {
-                    card.style.opacity = '0';
-                    card.style.visibility = 'hidden';
-                    card.style.pointerEvents = 'none';
-                    return;
+                    if (!st.parked) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translate3d(-50%, -50%, -900px) scale(0.7)';
+                        if (st.interactive !== false) {
+                            card.style.pointerEvents = 'none';
+                            st.interactive = false;
+                        }
+                        if (st.zIndex !== 1) {
+                            card.style.zIndex = '1';
+                            st.zIndex = 1;
+                        }
+                        st.parked = true;
+                    }
+                    continue;
                 }
+
+                st.parked = false;
 
                 const translateY = d * yMult;
                 const translateX = d * xMult;
@@ -977,26 +970,76 @@
                 const rotateY = d * ryMult;
                 const rotateZ = d * rzMult;
                 const lensScale = Math.max(0.82, 1.05 - absD * 0.12);
-
                 const opacity = Math.max(0, 1 - Math.max(0, absD - 0.85) * 1.1);
 
-                card.style.visibility = 'visible';
+                const newZ = Math.round(100 - absD * 20);
+                const interactive = absD < 0.45;
+
+                if (st.zIndex !== newZ) {
+                    card.style.zIndex = String(newZ);
+                    st.zIndex = newZ;
+                }
+                if (st.interactive !== interactive) {
+                    card.style.pointerEvents = interactive ? 'auto' : 'none';
+                    st.interactive = interactive;
+                }
+
                 card.style.opacity = opacity.toFixed(3);
-                card.style.zIndex = Math.round(100 - absD * 20);
-                card.style.pointerEvents = absD < 0.45 ? 'auto' : 'none';
+                card.style.transform = `translate3d(calc(-50% + ${translateX.toFixed(1)}px), calc(-50% + ${translateY.toFixed(1)}px), ${translateZ.toFixed(1)}px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) rotateZ(${rotateZ.toFixed(2)}deg) scale(${lensScale.toFixed(3)})`;
+            }
+        }
 
-                card.style.transform = `
-                    translate3d(calc(-50% + ${translateX.toFixed(1)}px), calc(-50% + ${translateY.toFixed(1)}px), ${translateZ.toFixed(1)}px)
-                    rotateX(${rotateX.toFixed(2)}deg)
-                    rotateY(${rotateY.toFixed(2)}deg)
-                    rotateZ(${rotateZ.toFixed(2)}deg)
-                    scale(${lensScale.toFixed(3)})
-                `;
-            });
+        function animate3D(now) {
+            const dt = lastFrameTime ? Math.min(0.05, (now - lastFrameTime) / 1000) : 0.016;
+            lastFrameTime = now;
 
+            const maxIndex = Math.max(0, activeCards.length - 1);
+            targetProgress = Math.min(maxIndex, Math.max(0, window.scrollY / stepHeight));
+
+            // Interpolación independiente de los Hz de pantalla (suave en 60Hz y 120Hz)
+            const speed = isMobile ? 13 : 6.5;
+            const factor = 1 - Math.exp(-speed * dt);
+            currentProgress += (targetProgress - currentProgress) * factor;
+            velocity = targetProgress - currentProgress;
+
+            if (Math.abs(velocity) < 0.0005) {
+                currentProgress = targetProgress;
+                velocity = 0;
+                renderCards();
+                isAnimating = false;
+                lastFrameTime = 0;
+                return;
+            }
+
+            renderCards();
             requestAnimationFrame(animate3D);
         }
-        requestAnimationFrame(animate3D);
+
+        function startLoop() {
+            if (!isAnimating) {
+                isAnimating = true;
+                lastFrameTime = 0;
+                requestAnimationFrame(animate3D);
+            }
+        }
+
+        function onResize(force = false) {
+            const currentWidth = window.innerWidth;
+            if (!force && isMobile && Math.abs(currentWidth - lastWidth) < 10) return;
+
+            lastWidth = currentWidth;
+            isMobile = detectMobile();
+            baseHeight = window.innerHeight;
+            stepHeight = isMobile ? Math.min(baseHeight * 0.42, 320) : baseHeight * 0.85;
+
+            updateFisheyeLens();
+            updateActiveCards();
+            renderCards();
+        }
+
+        window.addEventListener('scroll', startLoop, { passive: true });
+        window.addEventListener('resize', () => onResize(false));
+        onResize(true);
 
         // 4. INTERACCIONES: VER EJEMPLOS Y ACORDEÓN
         const btnEjemplos = document.getElementById('btn-ejemplos');
@@ -1005,10 +1048,10 @@
 
         btnEjemplos.addEventListener('click', () => {
             const isHidden = tarjetaEjemplos.classList.toggle('hidden-card');
-            updateScrollHeight();
+            updateActiveCards();
 
             if (!isHidden) {
-                const indexEjemplos = getActiveCards().indexOf(tarjetaEjemplos);
+                const indexEjemplos = activeCards.indexOf(tarjetaEjemplos);
                 window.scrollTo({ top: indexEjemplos * stepHeight, behavior: 'smooth' });
             }
         });
@@ -1033,10 +1076,10 @@
         btnRegaloEgg.addEventListener('click', () => {
             if (tarjetaRegalo.classList.contains('hidden-card')) {
                 tarjetaRegalo.classList.remove('hidden-card');
-                updateScrollHeight();
+                updateActiveCards();
             }
             setTimeout(() => {
-                const indexRegalo = getActiveCards().indexOf(tarjetaRegalo);
+                const indexRegalo = activeCards.indexOf(tarjetaRegalo);
                 window.scrollTo({ top: indexRegalo * stepHeight, behavior: 'smooth' });
             }, 60);
         });
@@ -1105,10 +1148,10 @@
             tarjetaEjemplos.classList.add('hidden-card');
             outfitCols.forEach(c => c.classList.remove('expanded'));
             tarjetaReloj.classList.remove('hidden-card');
-            updateScrollHeight();
+            updateActiveCards();
 
             setTimeout(() => {
-                const indexReloj = getActiveCards().indexOf(tarjetaReloj);
+                const indexReloj = activeCards.indexOf(tarjetaReloj);
                 window.scrollTo({ top: indexReloj * stepHeight, behavior: 'smooth' });
             }, 60);
 
