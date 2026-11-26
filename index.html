@@ -5,140 +5,265 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invitación Milagros</title>
     <style>
-        body {
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
             margin: 0;
+            padding: 0;
+            width: 100%;
             font-family: 'Playfair Display', serif;
-            /* Fondo base fijo */
+            overscroll-behavior: none;
             background-image: url('milagros'), linear-gradient(to bottom, #8faadc 0%, #b3c6e6 30%, #e6ebd8 60%, #c4d4af 100%);
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            overscroll-behavior: none;
-            /* SE ELIMINÓ overflow-x: hidden; PARA QUE FUNCIONE EL APILADO */
         }
 
-        .hero {
-            position: fixed;
-            top: 0;
-            left: 0;
+        #scroll-track {
             width: 100%;
-            height: 100vh;
-            display: flex;
-            align-items: center; /* Banner centrado al inicio */
-            justify-content: center;
-            text-align: center;
-            z-index: 1;
+            pointer-events: none;
         }
-        
-        .hero-badge {
-            background: transparent; 
-            padding: 20px;
-            box-shadow: none;
-            max-width: 90%; 
-            /* El desplazamiento hacia abajo lo controla JavaScript según el scroll */
-            transform: translateY(0);
+
+        /* BOTÓN FLOTANTE DE MÚSICA (Arriba a la derecha) */
+        .music-btn {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 200;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(34, 34, 34, 0.18);
+            background: rgba(247, 244, 237, 0.92);
+            color: #222;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+            backdrop-filter: blur(6px);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.06);
+            background: #f7f4ed;
+        }
+
+        .music-btn.playing {
+            box-shadow: 0 0 0 4px rgba(195, 213, 232, 0.55), 0 6px 16px rgba(0, 0, 0, 0.16);
+        }
+
+        .music-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+      /* EASTER EGG DEL REGALO (Agrandado para PC y adaptado a celular) */
+        .gift-egg-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 200;
+            width: 115px;
+            height: 115px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.24));
+            animation: gift-wiggle 4.5s ease-in-out infinite;
+        }
+
+        .gift-egg-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            transition: transform 0.2s ease;
+        }
+
+  .gift-egg-btn {
+    width: 145px;
+    height: 112px;
+}
+
+@media (max-width: 600px) {
+    .gift-egg-btn {
+        width: 105px;
+        height: 82px;
+    }
+}
+
+        /* CAPA 1: El cristal Ojo de Pez */
+        .fisheye-lens-layer {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            z-index: 10;
+            pointer-events: none;
+            filter: url(#fisheye-lens);
+            will-change: filter;
+        }
+
+        /* CAPA 2: La cámara de perspectiva 3D */
+        .perspective-stage {
+            width: 100%;
+            height: 100%;
+            perspective: 720px;
+            perspective-origin: 50% 50%;
+        }
+
+        /* CAPA 3: El rotor 3D con inercia */
+        .scene-tilt {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
             will-change: transform;
         }
-        
-        .hero-badge img {
+
+        /* Cada tarjeta dentro del cilindro 3D */
+        .card-3d {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 90%;
+            max-width: 440px;
+            transform-style: preserve-3d;
+            will-change: transform, opacity;
+            pointer-events: auto;
+        }
+
+        /* Portada Inicial */
+        .hero-card {
+            background: transparent;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .hero-card img {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             height: auto;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 12px 20px rgba(0,0,0,0.18));
         }
 
-        .feed-container {
-            padding: 20px;
-            /* Las tarjetas empiezan debajo del hero fijo */
-            padding-top: 100vh;
-            display: flex;
-            flex-direction: column;
-            gap: 15px; 
-            /* El padding-bottom inferior se calcula con JavaScript (ajustarEspacioFinal)
-               para que el scroll termine exactamente cuando la última tarjeta queda fijada */
-            padding-bottom: 20px; 
-            position: relative;
-            z-index: 10;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Molde base de las tarjetas */
+        /* Molde unificado de tarjetas */
         .card {
-            background-image: url('FondoOndulado.png'); 
-            background-size: 100% 100%; 
+            background-image: url('FondoOndulado.png');
+            background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
-            
-            /* CORRECCIÓN CRÍTICA: Totalmente transparente para que se vean tus ondas */
-            background-color: transparent; 
-            
-            padding: 50px 35px; 
-            box-shadow: none; 
-            filter: drop-shadow(0 -5px 15px rgba(0,0,0,0.1)); 
-            
-            position: sticky;
-            box-sizing: border-box;
-            min-height: 380px; 
-            
+            background-color: transparent;
+            padding: 50px 35px;
+            min-height: 360px;
+            filter: drop-shadow(0 14px 24px rgba(0,0,0,0.16));
             display: flex;
             flex-direction: column;
-            justify-content: center; 
+            justify-content: center;
         }
 
-        #tarjeta-ejemplos {
-            max-height: 0;
-            min-height: 0; 
-            padding-top: 0;
-            padding-bottom: 0;
-            margin-bottom: -15px; 
-            overflow: hidden;
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        #tarjeta-ejemplos.visible {
-            max-height: 900px;
-            min-height: 380px; 
-            padding-top: 50px;
-            padding-bottom: 50px;
-            margin-bottom: 0;
+        /* Tarjeta de Confirmar agrandada + etiqueta de fecha límite */
+        .card-3d.confirm-card {
+            width: 94%;
+            max-width: 520px;
+            padding: 0;
+            min-height: auto;
+            background: transparent;
+            filter: drop-shadow(0 14px 24px rgba(0,0,0,0.18));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        #tarjeta-reloj {
-            display: none;
+        .confirm-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
+            transform: scale(1.16);
+            transform-origin: center center;
+        }
+
+        .deadline-pill {
+            margin-top: 32px;
+            padding: 8px 18px;
+            background: rgba(247, 244, 237, 0.94);
+            color: #333;
+            border-radius: 999px;
+            font-size: 0.92rem;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
             text-align: center;
         }
 
-        /* Distancias de apilamiento (Efecto Mazo Mercado Pago) */
-        .card:nth-child(1) { top: 10px; }
-        .card:nth-child(2) { top: 25px; }
-        .card:nth-child(3) { top: 40px; }
-        .card:nth-child(4) { top: 55px; }
-        .card:nth-child(5) { top: 70px; }
-        .card:nth-child(6) { top: 85px; }
+        .hidden-card {
+            display: none !important;
+        }
 
         .card-title {
-            font-size: 1.8rem; 
+            font-size: 1.8rem;
             text-align: center;
             margin-top: 0;
-            margin-bottom: 15px; 
+            margin-bottom: 15px;
             color: #222;
         }
-        
+
         .card-text {
             text-align: center;
             color: #444;
-            font-size: 1.1rem; 
-            margin-bottom: 20px; 
+            font-size: 1.1rem;
+            margin-bottom: 20px;
             line-height: 1.5;
         }
-        
+
+        /* Recuadro de Alias dentro de la tarjeta sorpresa de Regalos */
+        .alias-box {
+            background: rgba(0, 0, 0, 0.045);
+            border: 1px dashed rgba(34, 34, 34, 0.25);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin: 0 auto 18px;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .alias-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .alias-value {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #222;
+            word-break: break-all;
+        }
+
+        .alias-owner {
+            font-size: 0.88rem;
+            color: #555;
+            margin-top: 4px;
+        }
+
         .btn {
             display: block;
             width: fit-content;
             margin: 0 auto;
-            background: #c3d5e8; 
+            background: #c3d5e8;
             padding: 12px 35px;
             border-radius: 25px;
             text-decoration: none;
@@ -148,18 +273,32 @@
             border: none;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, background 0.2s ease;
+            font-family: inherit;
         }
 
+        .btn:hover {
+            transform: scale(1.04);
+            background: #b5cae0;
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Acordeón vertical de Outfits */
         .outfits-accordion {
             display: flex;
-            flex-direction: row; 
-            height: 240px; 
+            flex-direction: row;
+            height: 230px;
             gap: 6px;
             margin-top: 10px;
         }
-        
+
         .outfit-col {
-            flex: 1; 
+            flex: 1;
             height: 100%;
             border-radius: 12px;
             overflow: hidden;
@@ -170,29 +309,27 @@
             align-items: center;
             justify-content: center;
         }
-        
-        .outfit-col.expanded {
-            flex: 4; 
-        }
-        
+
+        .outfit-col.expanded { flex: 4; }
+
         .col-title {
             position: absolute;
             font-weight: bold;
             color: #222;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            writing-mode: vertical-rl; 
+            writing-mode: vertical-rl;
             transform: rotate(180deg);
             transition: opacity 0.3s ease;
             white-space: nowrap;
         }
-        
+
         .outfit-col.expanded .col-title {
             opacity: 0;
             pointer-events: none;
         }
-        
+
         .outfit-content {
             width: 100%;
             height: 100%;
@@ -203,12 +340,12 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        
+
         .outfit-col.expanded .outfit-content {
             opacity: 1;
-            transition-delay: 0.2s; 
+            transition-delay: 0.15s;
         }
-        
+
         .outfit-content img {
             max-width: 100%;
             max-height: 100%;
@@ -216,6 +353,7 @@
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
         }
 
+        /* Contador */
         .countdown {
             display: flex;
             justify-content: center;
@@ -223,105 +361,573 @@
             font-size: 1.1rem;
             margin-top: 15px;
         }
-        
+
         .time-box {
             display: flex;
             flex-direction: column;
-            background: rgba(0,0,0,0.05); 
-            padding: 10px 15px;
+            background: rgba(0,0,0,0.06);
+            padding: 10px 14px;
             border-radius: 10px;
-            color: #222; 
+            color: #222;
+            text-align: center;
         }
-        
-        .time-box span { font-size: 2rem; font-weight: bold; }
+
+        .time-box span { font-size: 1.9rem; font-weight: bold; }
         .time-box label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* MODAL DEL FORMULARIO PROPIO */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: rgba(25, 30, 22, 0.55);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            overscroll-behavior: contain;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            max-height: 90dvh;
+            overflow-y: auto;
+            background: #f7f4ed;
+            border-radius: 22px;
+            padding: 32px 26px 26px;
+            box-shadow: 0 22px 45px rgba(0, 0, 0, 0.25);
+            border: 2px solid rgba(179, 186, 154, 0.45);
+            transform: translateY(18px) scale(0.97);
+            transition: transform 0.3s ease;
+            color: #222;
+        }
+
+        .modal-overlay.open .modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.06);
+            color: #333;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-title {
+            font-size: 1.65rem;
+            text-align: center;
+            margin: 0 0 6px;
+        }
+
+        .modal-subtitle {
+            text-align: center;
+            color: #555;
+            font-size: 0.95rem;
+            margin: 0 0 20px;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 7px;
+            color: #2b2b2b;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #d5d0c3;
+            background: #fffdf9;
+            font-family: inherit;
+            font-size: 0.98rem;
+            color: #222;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: #8faadc;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 68px;
+        }
+
+        .radio-pills {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .radio-pill input { display: none; }
+
+        .radio-pill span {
+            display: block;
+            text-align: center;
+            padding: 11px 10px;
+            border-radius: 12px;
+            border: 1.5px solid #d5d0c3;
+            background: #fffdf9;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .radio-pill input:checked + span {
+            background: #c3d5e8;
+            border-color: #8faadc;
+            font-weight: bold;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: #fffdf9;
+            border: 1px solid #e2ddd0;
+            cursor: pointer;
+            font-size: 0.92rem;
+        }
+
+        .option-item input {
+            accent-color: #6b8eb8;
+            cursor: pointer;
+        }
+
+        #otros-wrapper {
+            margin-top: 8px;
+            display: none;
+        }
+
+        #otros-wrapper.visible {
+            display: block;
+        }
+
+        .form-status {
+            text-align: center;
+            font-size: 0.95rem;
+            margin-top: 12px;
+            min-height: 20px;
+            color: #3a5a40;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <div class="hero">
-        <div class="hero-badge">
-            <img src="Inicio.png" alt="Save the Date - Milagros 07.01.2027">
+    <!-- Audio de fondo (Colocá tu canción en la misma carpeta como musica.mp3) -->
+    <audio id="bg-music" src="musica.mp3" loop preload="auto"></audio>
+
+    <!-- Botón flotante para activar / mutear música -->
+    <button class="music-btn" id="btn-music" type="button" aria-label="Activar o silenciar música" title="Música">
+        <svg id="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+        <svg id="icon-playing" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+    </button>
+
+    <!-- Easter Egg flotante del Regalo (Poné tu archivo regalo.gif en la misma carpeta) -->
+    <button class="gift-egg-btn" id="btn-regalo-egg" type="button" aria-label="Regalo sorpresa" title="Regalo">
+        <img src="regalo.gif" alt="Regalo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <span class="gift-fallback" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                <rect x="2" y="7" width="20" height="5"></rect>
+                <line x1="12" y1="22" x2="12" y2="7"></line>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+            </svg>
+        </span>
+    </button>
+
+    <!-- Filtro SVG calibrado a las dimensiones exactas de la pantalla -->
+    <svg width="0" height="0" style="position: absolute; pointer-events: none;">
+        <defs>
+            <filter id="fisheye-lens" filterUnits="userSpaceOnUse" x="0" y="0" width="1920" height="1080" color-interpolation-filters="sRGB">
+                <feImage id="lens-map" x="0" y="0" width="1920" height="1080" preserveAspectRatio="none" result="map" />
+                <feDisplacementMap id="lens-disp" in="SourceGraphic" in2="map" scale="110" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- Escenario Fijo con Lente Curvo Externo + Cámara 3D Interna -->
+    <div class="fisheye-lens-layer">
+        <div class="perspective-stage">
+            <div class="scene-tilt" id="scene-tilt">
+
+                <!-- 0. Portada -->
+                <div class="card-3d hero-card">
+                    <img src="Inicio.png" alt="Save the Date - Milagros 07.01.2027">
+                </div>
+
+                <!-- 1. Dress Code -->
+                <div class="card-3d card">
+                    <h2 class="card-title">Dress code</h2>
+                    <p class="card-text">Pollera o bermuda color blanco, beige o marrón, y una remera playera o un top con tonos claros.</p>
+                    <button class="btn" id="btn-ejemplos">Ver ejemplos</button>
+                </div>
+
+                <!-- 2. Ideas de Outfit (Oculta hasta tocar Ver ejemplos) -->
+                <div class="card-3d card hidden-card" id="tarjeta-ejemplos">
+                    <h2 class="card-title">Ideas de Outfit</h2>
+                    <div class="outfits-accordion">
+                        <div class="outfit-col" style="background-color: #b3ba9a;">
+                            <div class="col-title">Verde</div>
+                            <div class="outfit-content">
+                                <img src="OutfitVerde.png" alt="Outfit Verde">
+                            </div>
+                        </div>
+                        <div class="outfit-col" style="background-color: #c5d4df;">
+                            <div class="col-title">Celeste</div>
+                            <div class="outfit-content">
+                                <img src="OutfitCeleste.png" alt="Outfit Celeste">
+                            </div>
+                        </div>
+                        <div class="outfit-col" style="background-color: #debbd1;">
+                            <div class="col-title">Rosa</div>
+                            <div class="outfit-content">
+                                <img src="OutfitRosa.png" alt="Outfit Rosa">
+                            </div>
+                        </div>
+                        <div class="outfit-col" style="background-color: #806D6B;">
+                            <div class="col-title">Marrón</div>
+                            <div class="outfit-content">
+                                <img src="OutfitMarron.png" alt="Outfit Marrón">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Lugar y Horario -->
+                <div class="card-3d card">
+                    <h2 class="card-title">Lugar y horario</h2>
+                    <p class="card-text">Jueves 7 de enero, de 12 hs a 20 hs.<br><br><strong>La Posada del León</strong></p>
+                    <a href="https://www.google.com/maps?q=La+Posada+de+Le%C3%B3n,+B1612+Ingeniero+Adolfo+Sourdeaux,+Provincia+de+Buenos+Aires&ftid=0x95bca30041ba5d37:0x1dafb5be228fb6fd&entry=gps&shh=CAE&lucs=,94297699,100808504,94284457,94231188,94280568,47071704,94218641,94282134,94286869&g_ep=CAISEjI2LjE2LjAuODk4OTU0MjE1MBgAIIgnKlIsOTQyOTc2OTksMTAwODA4NTA0LDk0Mjg0NDU3LDk0MjMxMTg4LDk0MjgwNTY4LDQ3MDcxNzA0LDk0MjE4NjQxLDk0MjgyMTM0LDk0Mjg2ODY5QgJBUg%3D%3D&skid=00386a9a-7968-46de-be25-39050574eb33&g_st=ic" class="btn" target="_blank" rel="noopener noreferrer">Maps</a>
+                </div>
+
+                <!-- 4. Música -->
+                <div class="card-3d card">
+                    <h2 class="card-title">Música</h2>
+                    <p class="card-text">¡Sumá tus canciones favoritas a la playlist de la fiesta!</p>
+                    <a href="https://open.spotify.com/playlist/6Ysf9lxAFBgRIJ922w1MzI?si=2IjDnAznSai99qwierhyFA&utm_source=whatsapp&pt=6c604d66bc948e96578c1bc7e68cd62b&pi=h9jBMmZuQKmjP" class="btn" target="_blank" rel="noopener noreferrer">Abrir Spotify</a>
+                </div>
+
+                <!-- 5. Confirmar + Fecha límite -->
+                <div class="card-3d confirm-card">
+                    <img src="Confirmar.png" onerror="this.onerror=null; this.src='Confirmar.jpg';" id="btn-confirmar" alt="Confirmar asistencia">
+                    <div class="deadline-pill">Confirmar antes del <strong>15 de diciembre</strong></div>
+                </div>
+
+                <!-- 6. Tarjeta Sorpresa de Regalos (Solo aparece si tocan el GIF del regalo) -->
+                <div class="card-3d card hidden-card" id="tarjeta-regalo">
+                    <h2 class="card-title">Regalos</h2>
+                    <p class="card-text">Tu presencia es mi mejor regalo. Si además deseás tener un detalle conmigo, podés hacerlo acá.</p>
+                    <div class="alias-box">
+                        <div class="alias-label">Alias</div>
+                        <!-- CAMBIÁ EL ALIAS Y EL TITULAR ACÁ -->
+                        <div class="alias-value" id="alias-texto">milagros.15.mp</div>
+                        <div class="alias-owner">Titular: Milagros</div>
+                    </div>
+                    <button type="button" class="btn" id="btn-copiar-alias">Copiar alias</button>
+                </div>
+
+                <!-- 7. Cuenta Regresiva (Solo aparece al confirmar) -->
+                <div class="card-3d card hidden-card" id="tarjeta-reloj">
+                    <h2 class="card-title">¡Faltan!</h2>
+                    <div class="countdown">
+                        <div class="time-box"><span id="dias">00</span><label>Días</label></div>
+                        <div class="time-box"><span id="horas">00</span><label>Horas</label></div>
+                        <div class="time-box"><span id="min">00</span><label>Min</label></div>
+                        <div class="time-box"><span id="seg">00</span><label>Seg</label></div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <div class="feed-container">
-        
-        <div class="card">
-            <h2 class="card-title">Dress code</h2>
-            <p class="card-text">Pollera o bermuda color blanco, beige o marrón, y una remera playera o un top con tonos claros.</p>
-            <button class="btn" id="btn-ejemplos">Ver ejemplos</button>
-        </div>
+    <!-- MODAL DE CONFIRMACIÓN PROPIO -->
+    <div class="modal-overlay" id="modal-confirmar" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-labelledby="modal-title">
+            <button type="button" class="modal-close" id="btn-cerrar-modal" aria-label="Cerrar">✕</button>
+            <h2 class="modal-title" id="modal-title">Confirmación</h2>
+            <p class="modal-subtitle">Te espero para compartir este día tan especial.<br>Por favor, confirmá antes del <strong>15 de diciembre</strong>.</p>
 
-        <div class="card" id="tarjeta-ejemplos">
-            <h2 class="card-title">Ideas de Outfit</h2>
-            <div class="outfits-accordion">
-                <div class="outfit-col" style="background-color: #b3ba9a;">
-                    <div class="col-title">Verde</div>
-                    <div class="outfit-content">
-                        <img src="OutfitVerde.png" alt="OutfitVerde">
+            <form id="rsvp-form">
+                <div class="form-group">
+                    <label class="form-label" for="input-nombre">Nombre y apellido *</label>
+                    <input type="text" id="input-nombre" name="nombre" class="form-input" placeholder="Ej: Juan Cruz" required>
+                </div>
+
+                <div class="form-group">
+                    <span class="form-label">¿Vas a asistir? *</span>
+                    <div class="radio-pills">
+                        <label class="radio-pill">
+                            <input type="radio" name="asistencia" value="Sí, asistiré" required>
+                            <span>Sí, asistiré</span>
+                        </label>
+                        <label class="radio-pill">
+                            <input type="radio" name="asistencia" value="No asistiré" required>
+                            <span>No asistiré</span>
+                        </label>
                     </div>
                 </div>
-                <div class="outfit-col" style="background-color: #c5d4df;">
-                    <div class="col-title">Celeste</div>
-                    <div class="outfit-content">
-                        <img src="OutfitCeleste.png" alt="Outfit Celeste">
+
+                <div class="form-group">
+                    <span class="form-label">Restricciones alimentarias</span>
+                    <div class="options-grid">
+                        <label class="option-item"><input type="radio" name="restriccion" value="Ninguna" checked> Ninguna</label>
+                        <label class="option-item"><input type="radio" name="restriccion" value="Vegetariano"> Vegetariano</label>
+                        <label class="option-item"><input type="radio" name="restriccion" value="Vegano"> Vegano</label>
+                        <label class="option-item"><input type="radio" name="restriccion" value="Kosher"> Kosher</label>
+                        <label class="option-item"><input type="radio" name="restriccion" value="Libre de gluten"> Celíaco (Sin TACC)</label>
+                        <label class="option-item"><input type="radio" name="restriccion" value="Otros"> Otros</label>
+                    </div>
+                    <div id="otros-wrapper">
+                        <input type="text" id="input-otros" name="otros" class="form-input" placeholder="Especificá tu restricción o alergia...">
                     </div>
                 </div>
-                <div class="outfit-col" style="background-color: #debbd1;">
-                    <div class="col-title">Rosa</div>
-                    <div class="outfit-content">
-                        <img src="OutfitRosa.png" alt="Outfit Rosa">
-                    </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="input-mensaje">Mensaje para Milagros (opcional)</label>
+                    <textarea id="input-mensaje" name="mensaje" class="form-textarea" placeholder="Dejale un saludo o deseo..."></textarea>
                 </div>
-                <div class="outfit-col" style="background-color: #806D6B;">
-                    <div class="col-title">Marrón</div>
-                    <div class="outfit-content">
-                        <img src="OutfitMarron.png" alt="Outfit Lila">
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2 class="card-title">Lugar y horario</h2>
-            <p class="card-text">Jueves 7 de enero, de 12 hs a 20 hs.<br><br><strong>La Posada del León</strong></p>
-            <a href="#" class="btn" target="_blank">Maps</a>
-        </div>
 
-        <div class="card">
-            <h2 class="card-title">Música</h2>
-            <p class="card-text">¡Sumá tus canciones favoritas a la playlist de la fiesta!</p>
-            <a href="https://open.spotify.com/playlist/6Ysf9lxAFBgRIJ922w1MzI?si=2IjDnAznSai99qwierhyFA&utm_source=whatsapp&pt=6c604d66bc948e96578c1bc7e68cd62b&pi=h9jBMmZuQKmjP" class="btn" target="_blank">Abrir Spotify</a>
+                <button type="submit" class="btn" id="btn-enviar-form">Enviar confirmación</button>
+                <div class="form-status" id="form-status"></div>
+            </form>
         </div>
-
-        <!-- Tarjeta Confirmar -->
-        <div class="card" style="padding: 0; min-height: auto; border-radius: 0; background-image: none; background-color: transparent; filter: none;">
-            <img src="Confirmar.png" id="btn-confirmar" style="width: 100%; height: auto; cursor: pointer; filter: drop-shadow(0 -5px 15px rgba(0,0,0,0.1));" alt="Confirmar asistencia">
-        </div>
-
-        <div class="card" id="tarjeta-reloj">
-            <h2 class="card-title">¡Faltan!</h2>
-            <div class="countdown">
-                <div class="time-box"><span id="dias">00</span><label>Días</label></div>
-                <div class="time-box"><span id="horas">00</span><label>Horas</label></div>
-                <div class="time-box"><span id="min">00</span><label>Min</label></div>
-                <div class="time-box"><span id="seg">00</span><label>Seg</label></div>
-            </div>
-        </div>
-        
     </div>
+
+    <div id="scroll-track"></div>
 
     <script>
-        const btnEjemplos = document.getElementById('btn-ejemplos');
-        const tarjetaEjemplos = document.getElementById('tarjeta-ejemplos');
+        // =========================================================================
+        // PEGÁ ACÁ LA URL DE TU GOOGLE APPS SCRIPT (termina en /exec)
+        const GOOGLE_SCRIPT_URL = 'PEGÁ_ACÁ_TU_URL_DE_APPS_SCRIPT';
+        // =========================================================================
 
-        btnEjemplos.addEventListener('click', () => {
-            tarjetaEjemplos.classList.toggle('visible');
+        // 1. MÚSICA DE FONDO + BOTÓN MUTE / PLAY
+        const bgMusic = document.getElementById('bg-music');
+        const btnMusic = document.getElementById('btn-music');
+        const iconMuted = document.getElementById('icon-muted');
+        const iconPlaying = document.getElementById('icon-playing');
+        let userMuted = false;
+
+        function updateMusicUI(isPlaying) {
+            iconPlaying.style.display = isPlaying ? 'block' : 'none';
+            iconMuted.style.display = isPlaying ? 'none' : 'block';
+            btnMusic.classList.toggle('playing', isPlaying);
+        }
+
+        function tryAutoPlay() {
+            if (userMuted || !bgMusic.paused) return;
+            bgMusic.volume = 0.45;
+            bgMusic.play().then(() => {
+                updateMusicUI(true);
+                window.removeEventListener('click', tryAutoPlay);
+                window.removeEventListener('touchstart', tryAutoPlay);
+            }).catch(() => {});
+        }
+
+        window.addEventListener('click', tryAutoPlay);
+        window.addEventListener('touchstart', tryAutoPlay, { passive: true });
+
+        btnMusic.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bgMusic.paused) {
+                userMuted = false;
+                bgMusic.volume = 0.45;
+                bgMusic.play().then(() => updateMusicUI(true)).catch(() => {});
+            } else {
+                userMuted = true;
+                bgMusic.pause();
+                updateMusicUI(false);
+            }
         });
 
+        // 2. GENERADOR ÓPTICO DE CURVATURA OJO DE PEZ
+        const filterEl = document.getElementById('fisheye-lens');
+        const lensMapEl = document.getElementById('lens-map');
+        const lensDisp = document.getElementById('lens-disp');
+
+        function updateFisheyeLens() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            filterEl.setAttribute('width', vw);
+            filterEl.setAttribute('height', vh);
+            lensMapEl.setAttribute('width', vw);
+            lensMapEl.setAttribute('height', vh);
+
+            const size = 256;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const imgData = ctx.createImageData(size, size);
+            const data = imgData.data;
+
+            const refX = Math.min(vw * 0.45, 290);
+            const refY = vh * 0.48;
+
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const sx = (x / (size - 1) - 0.5) * vw;
+                    const sy = (y / (size - 1) - 0.5) * vh;
+
+                    const nx = sx / refX;
+                    const ny = sy / refY;
+
+                    const dx = Math.tanh(nx * (ny * ny * 0.42 + nx * nx * 0.14));
+                    const dy = Math.tanh(ny * (nx * nx * 0.88 + ny * ny * 0.08));
+
+                    const idx = (y * size + x) * 4;
+                    data[idx] = Math.round(128 + dx * 127);
+                    data[idx + 1] = Math.round(128 + dy * 127);
+                    data[idx + 2] = 128;
+                    data[idx + 3] = 255;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            lensMapEl.setAttribute('href', canvas.toDataURL());
+        }
+
+        // 3. MOTOR DE CARRUSEL 3D INCLINADO
+        const scrollTrack = document.getElementById('scroll-track');
+        const sceneTilt = document.getElementById('scene-tilt');
+        const allCards = Array.from(document.querySelectorAll('.card-3d'));
+
+        let stepHeight = window.innerHeight * 0.85;
+        let currentProgress = 0;
+        let targetProgress = 0;
+        let velocity = 0;
+
+        function getActiveCards() {
+            return allCards.filter(c => !c.classList.contains('hidden-card'));
+        }
+
+        function onResize() {
+            stepHeight = window.innerHeight * 0.85;
+            const activeCount = getActiveCards().length;
+            scrollTrack.style.height = `${window.innerHeight + (activeCount - 1) * stepHeight}px`;
+            updateFisheyeLens();
+        }
+
+        window.addEventListener('resize', onResize);
+        onResize();
+
+        function animate3D() {
+            const activeCards = getActiveCards();
+            const maxIndex = Math.max(0, activeCards.length - 1);
+
+            targetProgress = Math.min(maxIndex, Math.max(0, window.scrollY / stepHeight));
+
+            currentProgress += (targetProgress - currentProgress) * 0.09;
+            velocity = (targetProgress - currentProgress);
+
+            const tiltX = Math.max(-14, Math.min(14, velocity * 16));
+            const tiltZ = Math.max(-6, Math.min(6, velocity * -4.5));
+            sceneTilt.style.transform = `rotateX(${tiltX.toFixed(2)}deg) rotateZ(${tiltZ.toFixed(2)}deg)`;
+
+            const fisheyeScale = 110 + Math.min(40, Math.abs(velocity) * 75);
+            lensDisp.setAttribute('scale', fisheyeScale.toFixed(1));
+
+            activeCards.forEach((card, index) => {
+                const d = index - currentProgress;
+                const absD = Math.abs(d);
+
+                if (absD > 2.3) {
+                    card.style.opacity = '0';
+                    card.style.pointerEvents = 'none';
+                    return;
+                }
+
+                const translateY = d * 415;
+                const translateX = d * 62;
+                const translateZ = -absD * 250 - (d * d) * 65;
+                const rotateX = d * -32;
+                const rotateY = d * -17;
+                const rotateZ = d * -9;
+                const lensScale = Math.max(0.82, 1.05 - absD * 0.12);
+
+                const opacity = Math.max(0, 1 - Math.max(0, absD - 0.85) * 1.1);
+
+                card.style.opacity = opacity.toFixed(3);
+                card.style.zIndex = Math.round(100 - absD * 20);
+                card.style.pointerEvents = absD < 0.45 ? 'auto' : 'none';
+
+                card.style.transform = `
+                    translate3d(calc(-50% + ${translateX.toFixed(1)}px), calc(-50% + ${translateY.toFixed(1)}px), ${translateZ.toFixed(1)}px)
+                    rotateX(${rotateX.toFixed(2)}deg)
+                    rotateY(${rotateY.toFixed(2)}deg)
+                    rotateZ(${rotateZ.toFixed(2)}deg)
+                    scale(${lensScale.toFixed(3)})
+                `;
+            });
+
+            requestAnimationFrame(animate3D);
+        }
+        requestAnimationFrame(animate3D);
+
+        // 4. INTERACCIONES: VER EJEMPLOS Y ACORDEÓN
+        const btnEjemplos = document.getElementById('btn-ejemplos');
+        const tarjetaEjemplos = document.getElementById('tarjeta-ejemplos');
         const outfitCols = document.querySelectorAll('.outfit-col');
-        
+
+        btnEjemplos.addEventListener('click', () => {
+            const isHidden = tarjetaEjemplos.classList.toggle('hidden-card');
+            onResize();
+
+            if (!isHidden) {
+                const indexEjemplos = getActiveCards().indexOf(tarjetaEjemplos);
+                window.scrollTo({ top: indexEjemplos * stepHeight, behavior: 'smooth' });
+            }
+        });
+
         outfitCols.forEach(col => {
             col.addEventListener('click', function() {
                 if (this.classList.contains('expanded')) {
@@ -333,51 +939,95 @@
             });
         });
 
-        // Ajusta el espacio inferior para que el scroll termine justo cuando
-        // la última tarjeta visible queda fijada en su posición final
-        function ajustarEspacioFinal() {
-            const feed = document.querySelector('.feed-container');
-            const visibles = [...feed.querySelectorAll('.card')].filter(c => c.offsetHeight > 0);
-            const ultima = visibles[visibles.length - 1];
-            const topPegado = parseFloat(getComputedStyle(ultima).top) || 0;
+        // 5. EASTER EGG DEL REGALO (Activa la tarjeta 3D y gira hacia ella + copiar alias)
+        const btnRegaloEgg = document.getElementById('btn-regalo-egg');
+        const tarjetaRegalo = document.getElementById('tarjeta-regalo');
+        const btnCopiarAlias = document.getElementById('btn-copiar-alias');
+        const aliasTexto = document.getElementById('alias-texto');
 
-            const relleno = window.innerHeight - ultima.offsetHeight - topPegado;
-            feed.style.paddingBottom = Math.max(20, relleno) + 'px';
-            moverBanner();
-        }
+        btnRegaloEgg.addEventListener('click', () => {
+            if (tarjetaRegalo.classList.contains('hidden-card')) {
+                tarjetaRegalo.classList.remove('hidden-card');
+                onResize();
+            }
+            setTimeout(() => {
+                const indexRegalo = getActiveCards().indexOf(tarjetaRegalo);
+                window.scrollTo({ top: indexRegalo * stepHeight, behavior: 'smooth' });
+            }, 60);
+        });
 
-        // Baja el banner según el avance del scroll:
-        // centrado al inicio y 25% de la pantalla más abajo al llegar al final
-        const banner = document.querySelector('.hero-badge');
+        btnCopiarAlias.addEventListener('click', () => {
+            const alias = aliasTexto.textContent.trim();
+            const confirmarCopia = () => {
+                btnCopiarAlias.textContent = '¡Alias copiado!';
+                setTimeout(() => {
+                    btnCopiarAlias.textContent = 'Copiar alias';
+                }, 2000);
+            };
 
-        function moverBanner() {
-            const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-            const progreso = Math.min(1, window.scrollY / maxScroll);
-            const desplazamiento = progreso * window.innerHeight * 0.25;
-            banner.style.transform = `translateY(${desplazamiento}px)`;
-        }
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(alias).then(confirmarCopia).catch(() => {});
+            } else {
+                const aux = document.createElement('textarea');
+                aux.value = alias;
+                document.body.appendChild(aux);
+                aux.select();
+                document.execCommand('copy');
+                document.body.removeChild(aux);
+                confirmarCopia();
+            }
+        });
 
-        window.addEventListener('load', ajustarEspacioFinal);
-        window.addEventListener('resize', ajustarEspacioFinal);
-        window.addEventListener('scroll', moverBanner, { passive: true });
-
+        // 6. FORMULARIO MODAL + ENVÍO A GOOGLE SHEETS + CUENTA REGRESIVA
         const btnConfirmar = document.getElementById('btn-confirmar');
+        const modalConfirmar = document.getElementById('modal-confirmar');
+        const btnCerrarModal = document.getElementById('btn-cerrar-modal');
+        const rsvpForm = document.getElementById('rsvp-form');
+        const otrosWrapper = document.getElementById('otros-wrapper');
+        const inputOtros = document.getElementById('input-otros');
+        const btnEnviarForm = document.getElementById('btn-enviar-form');
+        const formStatus = document.getElementById('form-status');
         const tarjetaReloj = document.getElementById('tarjeta-reloj');
         let intervaloReloj;
 
-        btnConfirmar.addEventListener('click', () => {
-            tarjetaEjemplos.classList.remove('visible');
-            outfitCols.forEach(c => c.classList.remove('expanded'));
+        function abrirModal() {
+            modalConfirmar.classList.add('open');
+            modalConfirmar.setAttribute('aria-hidden', 'false');
+        }
 
-            tarjetaReloj.style.display = 'flex';
-            ajustarEspacioFinal();
-            
+        function cerrarModal() {
+            modalConfirmar.classList.remove('open');
+            modalConfirmar.setAttribute('aria-hidden', 'true');
+        }
+
+        btnConfirmar.addEventListener('click', abrirModal);
+        btnCerrarModal.addEventListener('click', cerrarModal);
+        modalConfirmar.addEventListener('click', (e) => {
+            if (e.target === modalConfirmar) cerrarModal();
+        });
+
+        document.querySelectorAll('input[name="restriccion"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                const esOtros = radio.value === 'Otros' && radio.checked;
+                otrosWrapper.classList.toggle('visible', esOtros);
+                inputOtros.required = esOtros;
+                if (esOtros) inputOtros.focus();
+                else inputOtros.value = '';
+            });
+        });
+
+        function activarCuentaRegresiva() {
+            tarjetaEjemplos.classList.add('hidden-card');
+            outfitCols.forEach(c => c.classList.remove('expanded'));
+            tarjetaReloj.classList.remove('hidden-card');
+            onResize();
+
             setTimeout(() => {
-                tarjetaReloj.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }, 100);
+                const indexReloj = getActiveCards().indexOf(tarjetaReloj);
+                window.scrollTo({ top: indexReloj * stepHeight, behavior: 'smooth' });
+            }, 60);
 
             const fechaObjetivo = new Date('January 7, 2027 12:00:00').getTime();
-
             clearInterval(intervaloReloj);
             intervaloReloj = setInterval(() => {
                 const ahora = new Date().getTime();
@@ -393,6 +1043,57 @@
                     tarjetaReloj.innerHTML = "<h2 class='card-title'>¡Llegó el día!</h2>";
                 }
             }, 1000);
+        }
+
+        rsvpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nombre = document.getElementById('input-nombre').value.trim();
+            const asistenciaEl = document.querySelector('input[name="asistencia"]:checked');
+            const restriccionEl = document.querySelector('input[name="restriccion"]:checked');
+            const otros = inputOtros.value.trim();
+            const mensaje = document.getElementById('input-mensaje').value.trim();
+
+            if (!nombre || !asistenciaEl) return;
+
+            btnEnviarForm.disabled = true;
+            btnEnviarForm.textContent = 'Enviando...';
+            formStatus.textContent = '';
+
+            const payload = new URLSearchParams({
+                nombre,
+                asistencia: asistenciaEl.value,
+                restriccion: restriccionEl ? restriccionEl.value : 'Ninguna',
+                otros: restriccionEl && restriccionEl.value === 'Otros' ? otros : '',
+                mensaje
+            });
+
+            try {
+                if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.startsWith('http')) {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: payload
+                    });
+                }
+
+                formStatus.textContent = '¡Gracias por confirmar! Te esperamos.';
+                rsvpForm.reset();
+                otrosWrapper.classList.remove('visible');
+
+                setTimeout(() => {
+                    cerrarModal();
+                    btnEnviarForm.disabled = false;
+                    btnEnviarForm.textContent = 'Enviar confirmación';
+                    formStatus.textContent = '';
+                    activarCuentaRegresiva();
+                }, 900);
+            } catch (err) {
+                formStatus.style.color = '#a4161a';
+                formStatus.textContent = 'Hubo un error al enviar. Probá de nuevo.';
+                btnEnviarForm.disabled = false;
+                btnEnviarForm.textContent = 'Enviar confirmación';
+            }
         });
     </script>
 </body>
